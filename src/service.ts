@@ -30,6 +30,8 @@ import {
 import { getProfile, getPosts, analyzeProfile, analyzeImages, auditProfile } from './scrapers/instagram-scraper';
 import { searchReddit, getSubreddit, getTrending, getComments } from './scrapers/reddit-scraper';
 import { checkProduct, checkProductsBatch } from './scrapers/ecommerce-monitor';
+import { buildPredictionSignal, trendingPredictionTopics } from './scrapers/prediction-market';
+import { scanGitHubBounties } from './scrapers/bounty-scanner';
 
 export const serviceRouter = new Hono();
 
@@ -44,6 +46,36 @@ const MAPS_PRICE_USDC = 0.005;
 const MAPS_DESCRIPTION = 'Extract structured business data from Google Maps: name, address, phone, website, email, hours, ratings, reviews, categories, and geocoordinates. Search by category + location with full pagination.';
 const ECOMMERCE_PRICE_USDC = 0.002;
 const ECOMMERCE_DESCRIPTION = 'E-Commerce Price & Stock Monitor: price, availability, seller, rating, reviews, SKU/ASIN/GTIN, and price-drop signals from Amazon, Walmart, Target, eBay, and generic product pages.';
+const PREDICTION_PRICE_USDC = 0.01;
+const PREDICTION_DESCRIPTION = 'Prediction Market Signal Aggregator: Polymarket odds plus Reddit sentiment, divergence scoring, and ranked market signals.';
+const BOUNTY_SCANNER_PRICE_USDC = 0.05;
+const BOUNTY_SCANNER_DESCRIPTION = 'Hermes Bounty Scanner: ranks GitHub bounty issues by payout, competition, safety, and exact next action.';
+
+const PREDICTION_OUTPUT_SCHEMA = {
+  input: {
+    topic: 'string — Market/topic query, e.g. bitcoin, US election, fed rate cut (required)',
+    marketLimit: 'number — Optional Polymarket result count, max 20',
+    redditLimit: 'number — Optional Reddit post count, max 50',
+  },
+  output: {
+    markets: 'Polymarket market snapshots with outcomes/probabilities/liquidity',
+    sentiment: 'Reddit sentiment counts and top posts',
+    signals: 'direction, confidence, impliedProbability, sentimentScore, divergence, notes',
+    payment: '{ txHash, network, amount, settled }',
+  },
+};
+
+const BOUNTY_SCANNER_OUTPUT_SCHEMA = {
+  input: {
+    url: 'string — GitHub repository or issue URL (required)',
+  },
+  output: {
+    repository: 'owner/repo',
+    actionable: 'ranked bounty issues with payout, score, reasons, and nextAction',
+    skipped: 'issues skipped for no bounty signal, prompt-exfiltration, or crowded/claimed status',
+    payment: '{ txHash, network, amount, settled }',
+  },
+};
 
 const ECOMMERCE_OUTPUT_SCHEMA = {
   input: {
@@ -162,12 +194,107 @@ function ecommerce402(resource: string) {
   };
 }
 
+function paidService402(resource: string, description: string, priceUSDC: number, outputSchema: Record<string, any>) {
+  const baseRecipient = process.env.WALLET_ADDRESS_BASE || '0x5f03897c6c77dD00F65222A2420a3Cff5507079D';
+  const solanaRecipient = process.env.WALLET_ADDRESS_SOLANA || process.env.WALLET_ADDRESS;
+  const networks: any[] = [
+    {
+      network: 'base',
+      chainId: 'eip155:8453',
+      recipient: baseRecipient,
+      asset: 'USDC',
+      assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+      settlementTime: '~2s',
+    },
+  ];
+  if (solanaRecipient && !solanaRecipient.startsWith('0x')) {
+    networks.push({
+      network: 'solana',
+      chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+      recipient: solanaRecipient,
+      asset: 'USDC',
+      assetAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+      settlementTime: '~400ms',
+    });
+  }
+  return {
+    status: 402,
+    message: 'Payment required',
+    resource,
+    description,
+    price: { amount: String(priceUSDC), currency: 'USDC', minimumAmount: String(priceUSDC) },
+    networks,
+    headers: { required: ['Payment-Signature'], optional: ['X-Payment-Network'], format: 'Payment-Signature: <transaction_hash>' },
+    outputSchema,
+  };
+}
+
 function recipientForNetwork(network: 'base' | 'solana'): string {
   if (network === 'base') return process.env.WALLET_ADDRESS_BASE || '0x5f03897c6c77dD00F65222A2420a3Cff5507079D';
   const wallet = process.env.WALLET_ADDRESS_SOLANA || process.env.WALLET_ADDRESS;
   if (!wallet || wallet.startsWith('0x')) throw new Error('Solana wallet not configured; use Base payment network for this service.');
   return wallet;
 }
+
+function parsePaidNetwork(network: string): 'base' | 'solana' {
+  return network === 'solana' ? 'solana' : 'base';
+}
+
+async function verifyPaidRequest(c: any, resource: string, description: string, priceUSDC: number, schema: Record<string, any>) {
+  const payment = extractPayment(c);
+  if (!payment) return { response: c.json(paidService402(resource, description, priceUSDC, schema), 402) };
+  let recipient: string;
+  try {
+    recipient = recipientForNetwork(parsePaidNetwork(payment.network));
+  } catch (err: any) {
+    return { response: c.json({ error: 'Unsupported payment network', reason: err.message }, 402) };
+  }
+  const verification = await verifyPayment(payment, recipient, priceUSDC);
+  if (!verification.valid) return { response: c.json({ error: 'Payment verification failed', reason: verification.error }, 402) };
+  return { payment, verification };
+}
+
+serviceRouter.get('/prediction/signal', async (c) => {
+  const paid = await verifyPaidRequest(c, '/api/prediction/signal', PREDICTION_DESCRIPTION, PREDICTION_PRICE_USDC, PREDICTION_OUTPUT_SCHEMA);
+  if (paid.response) return paid.response;
+  const topic = c.req.query('topic') || c.req.query('q');
+  if (!topic) return c.json({ error: 'Missing required parameter: topic', example: '/api/prediction/signal?topic=bitcoin' }, 400);
+  const marketLimit = Math.min(Number(c.req.query('marketLimit') || 8) || 8, 20);
+  const redditLimit = Math.min(Number(c.req.query('redditLimit') || 20) || 20, 50);
+  const result = await buildPredictionSignal(topic, marketLimit, redditLimit);
+  const payment = paid.payment!;
+  const verification = paid.verification!;
+  c.header('X-Payment-Settled', 'true');
+  c.header('X-Payment-TxHash', payment.txHash);
+  c.header('Cache-Control', 'private, max-age=120');
+  return c.json({ ...result, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+});
+
+serviceRouter.get('/prediction/trending', async (c) => {
+  const paid = await verifyPaidRequest(c, '/api/prediction/trending', PREDICTION_DESCRIPTION, PREDICTION_PRICE_USDC, PREDICTION_OUTPUT_SCHEMA);
+  if (paid.response) return paid.response;
+  const topics = await trendingPredictionTopics();
+  const payment = paid.payment!;
+  const verification = paid.verification!;
+  c.header('X-Payment-Settled', 'true');
+  c.header('X-Payment-TxHash', payment.txHash);
+  c.header('Cache-Control', 'private, max-age=300');
+  return c.json({ generatedAt: new Date().toISOString(), topics, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+});
+
+serviceRouter.get('/bounty-scan', async (c) => {
+  const paid = await verifyPaidRequest(c, '/api/bounty-scan', BOUNTY_SCANNER_DESCRIPTION, BOUNTY_SCANNER_PRICE_USDC, BOUNTY_SCANNER_OUTPUT_SCHEMA);
+  if (paid.response) return paid.response;
+  const url = c.req.query('url');
+  if (!url) return c.json({ error: 'Missing required parameter: url', example: '/api/bounty-scan?url=https%3A%2F%2Fgithub.com%2Fowner%2Frepo' }, 400);
+  const result = await scanGitHubBounties(url);
+  const payment = paid.payment!;
+  const verification = paid.verification!;
+  c.header('X-Payment-Settled', 'true');
+  c.header('X-Payment-TxHash', payment.txHash);
+  c.header('Cache-Control', 'private, max-age=180');
+  return c.json({ ...result, payment: { txHash: payment.txHash, network: payment.network, amount: verification.amount, settled: true } });
+});
 
 serviceRouter.get('/ecommerce/check', async (c) => {
   const payment = extractPayment(c);
