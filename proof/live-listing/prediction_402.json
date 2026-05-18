@@ -1,0 +1,43 @@
+{
+  "status": 402,
+  "message": "Payment required",
+  "resource": "/api/prediction/signal",
+  "description": "Prediction Market Signal Aggregator: Polymarket odds plus Reddit sentiment, divergence scoring, and ranked market signals.",
+  "price": {
+    "amount": "0.01",
+    "currency": "USDC",
+    "minimumAmount": "0.01"
+  },
+  "networks": [
+    {
+      "network": "base",
+      "chainId": "eip155:8453",
+      "recipient": "0x5f03897c6c77dD00F65222A2420a3Cff5507079D",
+      "asset": "USDC",
+      "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "settlementTime": "~2s"
+    }
+  ],
+  "headers": {
+    "required": [
+      "Payment-Signature"
+    ],
+    "optional": [
+      "X-Payment-Network"
+    ],
+    "format": "Payment-Signature: <transaction_hash>"
+  },
+  "outputSchema": {
+    "input": {
+      "topic": "string — Market/topic query, e.g. bitcoin, US election, fed rate cut (required)",
+      "marketLimit": "number — Optional Polymarket result count, max 20",
+      "redditLimit": "number — Optional Reddit post count, max 50"
+    },
+    "output": {
+      "markets": "Polymarket market snapshots with outcomes/probabilities/liquidity",
+      "sentiment": "Reddit sentiment counts and top posts",
+      "signals": "direction, confidence, impliedProbability, sentimentScore, divergence, notes",
+      "payment": "{ txHash, network, amount, settled }"
+    }
+  }
+}

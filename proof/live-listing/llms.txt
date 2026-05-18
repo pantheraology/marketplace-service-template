@@ -1,0 +1,62 @@
+# PANTHERA Marketplace Service Hub
+
+> x402-paid intelligence APIs for autonomous agents. Pay per request in Base USDC; no API key required.
+
+Base URL: https://hermes-x402-panthera.loca.lt
+Fallback URL: https://publisher-jason-aaa-sent.trycloudflare.com
+Health: https://hermes-x402-panthera.loca.lt/health
+Discovery JSON: https://hermes-x402-panthera.loca.lt/
+OpenAPI: https://hermes-x402-panthera.loca.lt/openapi.json
+Repository: https://github.com/pantheraology/marketplace-service-template/tree/ecommerce-price-stock-monitor
+
+Payment network: Base (eip155:8453)
+Asset: USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
+Recipient: 0x5f03897c6c77dD00F65222A2420a3Cff5507079D
+
+## How to call
+
+1. Call a paid endpoint without payment to receive HTTP 402 and the exact schema/payment metadata.
+2. Send Base USDC payment for the advertised amount.
+3. Retry with `Payment-Signature: <transaction_hash>` and optional `X-Payment-Network: base`.
+
+## Monetizable endpoints
+
+- GET /api/run — Google Maps Lead Generator — search businesses by category + location — 0.005 USDC
+- GET /api/details — Google Maps Place Details — detailed business info by Place ID — 0.005 USDC
+- GET /api/serp — Mobile SERP Tracker — Google search results with organic, ads, PAA, AI overview — 0.003 USDC
+- GET /api/jobs — Get job listings (Indeed/LinkedIn) with salary + date + proxy metadata
+- GET /api/reviews/search — Search businesses by query + location — 0.01 USDC
+- GET /api/reviews/:place_id — Fetch Google reviews by Place ID — 0.02 USDC
+- GET /api/business/:place_id — Get business details + review summary — 0.01 USDC
+- GET /api/reviews/summary/:place_id — Get review summary stats — 0.005 USDC
+- GET /api/linkedin/person — LinkedIn person profile enrichment — 0.01 USDC
+- GET /api/linkedin/company — LinkedIn company profile enrichment — 0.01 USDC
+- GET /api/linkedin/search/people — Search LinkedIn people by keywords — 0.01 USDC
+- GET /api/linkedin/company/:id/employees — Find company employees by title — 0.01 USDC
+- GET /api/reddit/search — Search Reddit posts by keyword — 0.005 USDC
+- GET /api/reddit/trending — Get trending Reddit posts — 0.005 USDC
+- GET /api/reddit/subreddit/:name — Browse subreddit posts — 0.005 USDC
+- GET /api/reddit/thread/* — Fetch post comments — 0.01 USDC
+- GET /api/instagram/profile/:username — Instagram profile data — 0.01 USDC
+- GET /api/instagram/posts/:username — Recent Instagram posts — 0.02 USDC
+- GET /api/instagram/analyze/:username — Full Instagram analysis with AI vision — 0.15 USDC
+- GET /api/instagram/analyze/:username/images — AI vision analysis of Instagram images — 0.08 USDC
+- GET /api/instagram/audit/:username — Instagram authenticity audit — 0.05 USDC
+- GET /api/airbnb/search — Search Airbnb listings by location — 0.02 USDC
+- GET /api/airbnb/listing/:id — Get detailed Airbnb listing — 0.01 USDC
+- GET /api/airbnb/reviews/:listing_id — Get Airbnb listing reviews — 0.01 USDC
+- GET /api/airbnb/market-stats — Airbnb market statistics — 0.05 USDC
+- GET /api/ecommerce/check — E-Commerce Price & Stock Monitor — price, availability, seller, ratings, reviews, SKU/ASIN/GTIN — 0.002 USDC
+- POST /api/ecommerce/batch — Batch check up to 10 product URLs for price/stock intelligence — 0.002 USDC
+- GET /api/prediction/signal — Prediction Market Signal Aggregator — Polymarket odds + Reddit sentiment + divergence scoring — 0.01 USDC
+- GET /api/prediction/trending — Trending prediction-market topics ranked by volume/liquidity — 0.01 USDC
+- GET /api/bounty-scan — Hermes Bounty Scanner — rank GitHub bounties by payout, competition, safety, and next action — 0.05 USDC
+- GET /api/research — Multi-source research aggregation — 0.05 USDC
+- GET /api/trending — Trending topics intelligence — 0.01 USDC
+
+## High-value entry points
+
+- /api/ecommerce/check — product price/stock intelligence, 0.002 USDC
+- /api/prediction/signal — Polymarket + Reddit divergence signal, 0.01 USDC
+- /api/bounty-scan — GitHub bounty triage with safety filters, 0.05 USDC
+- /api/research — multi-source research aggregation, 0.05 USDC

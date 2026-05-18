@@ -1,0 +1,41 @@
+{
+  "status": 402,
+  "message": "Payment required",
+  "resource": "/api/bounty-scan",
+  "description": "Hermes Bounty Scanner: ranks GitHub bounty issues by payout, competition, safety, and exact next action.",
+  "price": {
+    "amount": "0.05",
+    "currency": "USDC",
+    "minimumAmount": "0.05"
+  },
+  "networks": [
+    {
+      "network": "base",
+      "chainId": "eip155:8453",
+      "recipient": "0x5f03897c6c77dD00F65222A2420a3Cff5507079D",
+      "asset": "USDC",
+      "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "settlementTime": "~2s"
+    }
+  ],
+  "headers": {
+    "required": [
+      "Payment-Signature"
+    ],
+    "optional": [
+      "X-Payment-Network"
+    ],
+    "format": "Payment-Signature: <transaction_hash>"
+  },
+  "outputSchema": {
+    "input": {
+      "url": "string — GitHub repository or issue URL (required)"
+    },
+    "output": {
+      "repository": "owner/repo",
+      "actionable": "ranked bounty issues with payout, score, reasons, and nextAction",
+      "skipped": "issues skipped for no bounty signal, prompt-exfiltration, or crowded/claimed status",
+      "payment": "{ txHash, network, amount, settled }"
+    }
+  }
+}

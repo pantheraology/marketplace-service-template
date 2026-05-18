@@ -1,0 +1,58 @@
+{
+  "status": 402,
+  "message": "Payment required",
+  "resource": "/api/ecommerce/check",
+  "description": "E-Commerce Price & Stock Monitor: price, availability, seller, rating, reviews, SKU/ASIN/GTIN, and price-drop signals from Amazon, Walmart, Target, eBay, and generic product pages.",
+  "price": {
+    "amount": "0.002",
+    "currency": "USDC",
+    "minimumAmount": "0.002"
+  },
+  "networks": [
+    {
+      "network": "base",
+      "chainId": "eip155:8453",
+      "recipient": "0x5f03897c6c77dD00F65222A2420a3Cff5507079D",
+      "asset": "USDC",
+      "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "settlementTime": "~2s"
+    }
+  ],
+  "headers": {
+    "required": [
+      "Payment-Signature"
+    ],
+    "optional": [
+      "X-Payment-Network"
+    ],
+    "format": "Payment-Signature: <transaction_hash>"
+  },
+  "outputSchema": {
+    "input": {
+      "url": "string — Product page URL from Amazon/Walmart/Target/eBay/generic retailer (required)",
+      "expectedPrice": "number — Optional target price; response includes priceBelowExpected + priceDelta",
+      "currency": "string — Optional expected currency override"
+    },
+    "output": {
+      "url": "string",
+      "store": "amazon | walmart | target | ebay | generic",
+      "title": "string | null",
+      "price": "number | null",
+      "currency": "string | null",
+      "inStock": "boolean | null",
+      "availability": "string | null",
+      "seller": "string | null",
+      "rating": "number | null",
+      "reviewCount": "number | null",
+      "sku": "string | null",
+      "asin": "string | null",
+      "gtin": "string | null",
+      "image": "string | null",
+      "canonicalUrl": "string | null",
+      "observedAt": "ISO timestamp",
+      "proxy": "{ country: string, type: \"mobile\" }",
+      "signals": "{ captchaDetected, loginWallDetected, parseConfidence, priceBelowExpected?, priceDelta? }",
+      "payment": "{ txHash, network, amount, settled }"
+    }
+  }
+}

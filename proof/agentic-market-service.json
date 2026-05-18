@@ -1,0 +1,75 @@
+{
+  "id": "panthera-marketplace-service-hub",
+  "name": "PANTHERA Marketplace Service Hub",
+  "description": "x402-paid intelligence APIs for autonomous agents: e-commerce price/stock checks, prediction-market signals, bounty triage, research aggregation, and social/market intelligence.",
+  "category": "Data",
+  "provider": "PANTHERA",
+  "providerUrl": "https://github.com/pantheraology/marketplace-service-template/tree/ecommerce-price-stock-monitor",
+  "domain": "hermes-x402-panthera.loca.lt",
+  "baseUrl": "https://hermes-x402-panthera.loca.lt",
+  "fallbackUrl": "https://publisher-jason-aaa-sent.trycloudflare.com",
+  "llmsTxt": "https://hermes-x402-panthera.loca.lt/llms.txt",
+  "openapi": "https://hermes-x402-panthera.loca.lt/openapi.json",
+  "networks": ["Base"],
+  "payment": {
+    "network": "Base",
+    "chainId": "eip155:8453",
+    "asset": "USDC",
+    "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "recipient": "0x5f03897c6c77dD00F65222A2420a3Cff5507079D",
+    "header": "Payment-Signature"
+  },
+  "endpoints": [
+    {
+      "url": "https://hermes-x402-panthera.loca.lt/api/ecommerce/check",
+      "method": "GET",
+      "description": "E-commerce price and stock monitor for product pages; returns price, availability, seller, rating, identifiers, proxy/captcha/login-wall signals.",
+      "pricing": { "amount": "0.002", "currency": "USDC", "network": "Base", "scheme": "exact" },
+      "parameters": [
+        { "group": "query", "name": "url", "type": "string", "required": true, "description": "Product page URL" },
+        { "group": "query", "name": "expectedPrice", "type": "number", "required": false, "description": "Optional target price" }
+      ]
+    },
+    {
+      "url": "https://hermes-x402-panthera.loca.lt/api/prediction/signal",
+      "method": "GET",
+      "description": "Prediction-market signal aggregator combining Polymarket snapshots and Reddit sentiment/divergence scoring.",
+      "pricing": { "amount": "0.01", "currency": "USDC", "network": "Base", "scheme": "exact" },
+      "parameters": [
+        { "group": "query", "name": "topic", "type": "string", "required": true, "description": "Market/topic query such as bitcoin, election, fed rate cut" },
+        { "group": "query", "name": "marketLimit", "type": "number", "required": false, "description": "Max Polymarket results" },
+        { "group": "query", "name": "redditLimit", "type": "number", "required": false, "description": "Max Reddit posts" }
+      ]
+    },
+    {
+      "url": "https://hermes-x402-panthera.loca.lt/api/bounty-scan",
+      "method": "GET",
+      "description": "GitHub bounty scanner ranking issues by payout, competition, safety filters, and exact next action.",
+      "pricing": { "amount": "0.05", "currency": "USDC", "network": "Base", "scheme": "exact" },
+      "parameters": [
+        { "group": "query", "name": "url", "type": "string", "required": true, "description": "GitHub repository or issue URL" }
+      ]
+    },
+    {
+      "url": "https://hermes-x402-panthera.loca.lt/api/research",
+      "method": "GET",
+      "description": "Multi-source research aggregation for autonomous agents.",
+      "pricing": { "amount": "0.05", "currency": "USDC", "network": "Base", "scheme": "exact" },
+      "parameters": [
+        { "group": "query", "name": "q", "type": "string", "required": true, "description": "Research query" }
+      ]
+    }
+  ],
+  "proof": {
+    "manifest": "proof/live-listing/manifest.json",
+    "health": "proof/live-listing/health.json",
+    "discovery": "proof/live-listing/discovery.json",
+    "llms": "proof/live-listing/llms.txt",
+    "openapi": "proof/live-listing/openapi.json"
+  },
+  "limitations": [
+    "Payment-discovery and public service docs are live and verified.",
+    "Paid settlement proof requires a real Base USDC transaction.",
+    "Mobile-proxy retailer proof requires configured PROXY_* credentials."
+  ]
+}
