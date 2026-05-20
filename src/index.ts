@@ -109,7 +109,7 @@ app.get('/health', (c) => c.json({
   endpoints: marketplaceEndpoints.map((endpoint) => endpoint.path),
 }));
 
-app.get('/', (c) => c.json({
+const serviceDiscovery = () => ({
   name: process.env.SERVICE_NAME || 'marketplace-service-hub',
   description: process.env.SERVICE_DESCRIPTION || 'AI agent intelligence services powered by real 4G/5G mobile proxies.',
   version: '2.0.0',
@@ -145,7 +145,10 @@ app.get('/', (c) => c.json({
     openapi: `${PUBLIC_BASE_URL}/openapi.json`,
     fallback: FALLBACK_BASE_URL,
   },
-}));
+});
+
+app.get('/', (c) => c.json(serviceDiscovery()));
+app.get('/.well-known/x402/services', (c) => c.json(serviceDiscovery()));
 
 app.get('/llms.txt', (c) => c.text(`# PANTHERA Marketplace Service Hub
 
