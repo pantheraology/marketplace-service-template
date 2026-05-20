@@ -1,48 +1,18 @@
 {
-  "generated_at": "2026-05-18T17:50:47.702458Z",
-  "base_url": "https://hermes-x402-panthera.loca.lt",
-  "artifacts": {
-    "health": {
-      "url": "https://hermes-x402-panthera.loca.lt/health",
-      "status": 200,
-      "content_type": "application/json",
-      "file": "proof/live-listing/health.json"
-    },
-    "discovery": {
-      "url": "https://hermes-x402-panthera.loca.lt/",
-      "status": 200,
-      "content_type": "application/json",
-      "file": "proof/live-listing/discovery.json"
-    },
-    "llms": {
-      "url": "https://hermes-x402-panthera.loca.lt/llms.txt",
-      "status": 200,
-      "content_type": "text/plain; charset=UTF-8",
-      "file": "proof/live-listing/llms.txt"
-    },
-    "openapi": {
-      "url": "https://hermes-x402-panthera.loca.lt/openapi.json",
-      "status": 200,
-      "content_type": "application/json",
-      "file": "proof/live-listing/openapi.json"
-    },
-    "ecommerce_402": {
-      "url": "https://hermes-x402-panthera.loca.lt/api/ecommerce/check?url=https%3A%2F%2Fexample.com%2Fproduct&expectedPrice=99",
-      "status": 402,
-      "content_type": "application/json",
-      "file": "proof/live-listing/ecommerce_402.json"
-    },
-    "prediction_402": {
-      "url": "https://hermes-x402-panthera.loca.lt/api/prediction/signal?topic=bitcoin",
-      "status": 402,
-      "content_type": "application/json",
-      "file": "proof/live-listing/prediction_402.json"
-    },
-    "bounty_scan_402": {
-      "url": "https://hermes-x402-panthera.loca.lt/api/bounty-scan?url=https%3A%2F%2Fgithub.com%2Fpantheraology%2Fmarketplace-service-template",
-      "status": 402,
-      "content_type": "application/json",
-      "file": "proof/live-listing/bounty_scan_402.json"
-    }
-  }
+  "captured_at_utc": "2026-05-20T20:46:01.512199Z",
+  "public_url": "https://explorer-installed-cheapest-demonstrate.trycloudflare.com",
+  "files": [
+    "README.md",
+    "bounty_scan_402.http",
+    "bounty_scan_402.json",
+    "discovery.json",
+    "ecommerce_402.json",
+    "health.json",
+    "llms.txt",
+    "manifest.json",
+    "openapi.json",
+    "prediction_402.http",
+    "prediction_402.json",
+    "well-known-x402-services.json"
+  ]
 }

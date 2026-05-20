@@ -3,7 +3,7 @@
 > x402-paid intelligence APIs for autonomous agents. Pay per request in Base USDC; no API key required.
 
 Base URL: https://hermes-x402-panthera.loca.lt
-Fallback URL: https://publisher-jason-aaa-sent.trycloudflare.com
+Fallback URL: https://hermes-x402-panthera.loca.lt
 Health: https://hermes-x402-panthera.loca.lt/health
 Discovery JSON: https://hermes-x402-panthera.loca.lt/
 OpenAPI: https://hermes-x402-panthera.loca.lt/openapi.json
